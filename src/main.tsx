@@ -164,7 +164,7 @@ export default class DndPlugin extends Plugin {
 						<AppContext.Provider value={this.app}>
 							<DndAbilityScoresView
 								notes={parsedData ?? {}}
-								abilityScores={characterStats.abilityScores}/>
+								abilities={characterStats.abilities}/>
 						</AppContext.Provider>
 					</StrictMode>,
 				);

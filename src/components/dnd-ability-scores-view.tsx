@@ -2,14 +2,14 @@ import {DndAbility, DndCharacterAbilityScores, formatModifier} from "../lib/dnd"
 import {Card} from "./card";
 
 interface DndAbilityScoresViewProps {
-	abilityScores: DndCharacterAbilityScores;
+	abilities: DndCharacterAbilityScores;
 	notes: Partial<Record<DndAbility, string>>;
 }
 
-export function DndAbilityScoresView({abilityScores, notes}: DndAbilityScoresViewProps) {
+export function DndAbilityScoresView({abilities, notes}: DndAbilityScoresViewProps) {
 	return (
 		<div className="my-3 flex flex-wrap justify-center gap-3">
-			{Object.entries(abilityScores).map(([name, statValue]) => (
+			{Object.entries(abilities).map(([name, statValue]) => (
 				<Card
 					key={name}
 					label={name}

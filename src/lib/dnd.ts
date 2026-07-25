@@ -86,7 +86,7 @@ export type DndRestType = "longRest" | "shortRest";
 
 export type DndReplenishment = {
 	type: DndRestType;
-	replenishAmount?: number;
+	amount?: number;
 }
 
 
@@ -101,7 +101,7 @@ export type InputDndCharacterStats = {
 	},
 	level: number,
 	pb: number,
-	abilityScores: {
+	abilities: {
 		str: number,
 		dex: number,
 		con: number,
@@ -128,7 +128,7 @@ export type DndCharacterStats = {
 		hitDiceUsed: number;
 	};
 	savingThrows: DndAbility[],
-	abilityScores: DndCharacterAbilityScores;
+	abilities: DndCharacterAbilityScores;
 	skills: DndCharacterSkills;
 	consumables: Record<string, DndConsumable>
 } & {
@@ -141,8 +141,8 @@ export function convertToInputStats(stats: DndCharacterStats): InputDndCharacter
 		level: stats.level,
 		pb: stats.pb,
 		health: {hitDiceMax: stats.health.hitDiceMax, hitDiceUsed: stats.health.hitDiceUsed, hitDie: stats.health.hitDie, hp: stats.health.hp, hpMax: stats.health.hpMax, tempHp: stats.health.tempHp},
-		abilityScores: typedFromEntries(
-			Object.keys(stats.abilityScores).map(ability => [ability as keyof typeof stats.abilityScores, stats.abilityScores[ability as keyof typeof stats.abilityScores]?.score ?? 0]),
+		abilities: typedFromEntries(
+			Object.keys(stats.abilities).map(ability => [ability as keyof typeof stats.abilities, stats.abilities[ability as keyof typeof stats.abilities]?.score ?? 0]),
 		),
 		savingThrows: structuredClone(stats.savingThrows),
 		skills: typedFromEntries(
@@ -157,6 +157,8 @@ export function convertToInputStats(stats: DndCharacterStats): InputDndCharacter
 	}
 }
 export function convertFromInputStats(input: InputDndCharacterStats){
+
+
 	return {
 		...input,
 		level: input.level,
@@ -169,11 +171,11 @@ export function convertFromInputStats(input: InputDndCharacterStats){
 			hitDiceMax: input.health.hitDiceMax,
 			hitDiceUsed: input.health.hitDiceUsed
 		},
-		abilityScores: typedFromEntries(Object.keys(input.abilityScores).map(ability => {
-			const score = input.abilityScores[ability as keyof typeof input.abilityScores];
+		abilities: typedFromEntries(Object.keys(input.abilities).map(ability => {
+			const score = input.abilities[ability as keyof typeof input.abilities];
 			const modifier = getModifier(score);
 			const isProficient = input.savingThrows?.find(savingThrow => savingThrow === ability);
-			return [ability as keyof typeof input.abilityScores, {
+			return [ability as keyof typeof input.abilities, {
 				score,
 				modifier,
 				savingThrowModifier: isProficient ? modifier + input.pb : modifier
@@ -183,7 +185,7 @@ export function convertFromInputStats(input: InputDndCharacterStats){
 		skills: typedFromEntries(dndSkillTypes.map(type => {
 			const inputSkill = input.skills[type];
 			const correlatedAbility: DndAbility = dndSkillAbilityTypes[type];
-			const abilityScore = input.abilityScores[correlatedAbility];
+			const abilityScore = input.abilities[correlatedAbility];
 			const abilityModifier = getModifier(abilityScore);
 
 			return [type, {

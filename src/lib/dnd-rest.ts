@@ -25,11 +25,11 @@ function replenishConsumable(
 	const matchingRule = rules.find((rule) => rule.type === restType);
 	if (!matchingRule) return;
 
-	consumable.uses = matchingRule.replenishAmount === undefined
+	consumable.uses = matchingRule.amount === undefined
 		? consumable.usesMax
 		: Math.min(
 			consumable.usesMax,
-			Math.max(0, consumable.uses + matchingRule.replenishAmount),
+			Math.max(0, consumable.uses + matchingRule.amount),
 		);
 }
 
