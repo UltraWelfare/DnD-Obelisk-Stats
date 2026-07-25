@@ -1,0 +1,11 @@
+{
+	"id": "dnd-obelisk-stats",
+	"name": "DnD Obelisk Stats",
+	"version": "1.0.0",
+	"minAppVersion": "1.13.0",
+	"description": "Used to display DnD character stats",
+	"author": "UltraWelfare",
+	"authorUrl": "https://github.com/UltraWelfare",
+	"fundingUrl": "",
+	"isDesktopOnly": false
+}
