@@ -3,12 +3,12 @@ import {
 	DndConsumable,
 	DndReplenishment,
 	DndRestType,
-	InputDndCharacterStats,
+	InputDndCharacterStats, InputDndConsumable,
 } from "./dnd";
 
 function replenishConsumable(
-	inputConsumable: DndConsumable,
-	resolvedConsumable: DndConsumable,
+	inputConsumable: InputDndConsumable,
+	resolvedConsumable: Readonly<DndConsumable>,
 	restType: DndRestType,
 ): void {
 	const replenishesOn = resolvedConsumable.replenishesOn;
@@ -37,11 +37,11 @@ function replenishConsumable(
 
 export function applyRest(
 	input: InputDndCharacterStats,
-	resolved: DndCharacterStats,
+	resolved: Readonly<DndCharacterStats>,
 	restType: DndRestType,
 ): InputDndCharacterStats {
 	if (restType === "longRest") {
-		input.health.hp = input.health.hpMax;
+		input.health.hp = resolved.health.hpMax;
 	}
 
 	const inputConsumables = input.consumables;

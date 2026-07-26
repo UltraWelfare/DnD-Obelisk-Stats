@@ -62,6 +62,13 @@ export type DndCharacterSkills = Record<DndSkillType, {
 	modifier: number,
 }>;
 
+export type InputDndConsumable = {
+	label: string;
+	usesMax: string | number;
+	uses: number;
+	replenishesOn?: DndRestType | DndReplenishment | DndReplenishment[]
+}
+
 export type DndConsumable = {
 	label: string;
 	usesMax: number;
@@ -78,16 +85,15 @@ export type DndReplenishment = {
 
 
 export type InputDndCharacterStats = {
+	pb: number,
 	health: {
-		hp: number | string,
+		hp: number,
 		hpMax: number | string,
 		tempHp?: number | string,
 		hitDie: string,
 		hitDiceMax: number | string,
-		hitDiceUsed: number | string,
+		hitDiceUsed: number,
 	},
-	level: number,
-	pb: number,
 	abilities: {
 		str: number,
 		dex: number,
@@ -98,13 +104,12 @@ export type InputDndCharacterStats = {
 	},
 	savingThrows?: DndAbility[],
 	skills: Record<DndSkillType, "normal" | "proficient" | "expertise">,
-	consumables?: Record<string, DndConsumable>
+	consumables?: Record<string, InputDndConsumable>
 } & {
 	[key: string]: unknown;
 };
 
 export type DndCharacterStats = {
-	level: number;
 	pb: number;
 	health: {
 		hp: number;
@@ -125,7 +130,6 @@ export type DndCharacterStats = {
 export function convertFromInputStats(input: InputDndCharacterStats) {
 	const temporary: Record<string, unknown> = {
 		...input,
-		level: input.level,
 		pb: input.pb,
 		health: {
 			hp: input.health.hp,

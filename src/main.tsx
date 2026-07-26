@@ -201,17 +201,17 @@ export default class DndPlugin extends Plugin {
 
 
 			const onHealthChange = async (newHp: number, newTempHp: number) => {
-				await this.characterStatsStore.update(ctx.sourcePath, (characterStats) => {
-					characterStats.health.hp = newHp;
-					characterStats.health.tempHp = newTempHp;
-					return characterStats;
+				await this.characterStatsStore.update(ctx.sourcePath, (input) => {
+					input.health.hp = newHp;
+					input.health.tempHp = newTempHp;
+					return input;
 				});
 			};
 
 			const onHitDiceChange = async (newUsed: number) => {
-				await this.characterStatsStore.update(ctx.sourcePath, (characterStats) => {
-					characterStats.health.hitDiceUsed = newUsed;
-					return characterStats;
+				await this.characterStatsStore.update(ctx.sourcePath, (input) => {
+					input.health.hitDiceUsed = newUsed;
+					return input;
 				});
 			};
 
