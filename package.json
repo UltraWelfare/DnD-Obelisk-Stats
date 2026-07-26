@@ -1,6 +1,6 @@
 {
 	"name": "dnd-obelisk-stats",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"description": "Plugin for displaying DnD character stats",
 	"main": "main.js",
 	"type": "module",
