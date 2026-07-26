@@ -42,7 +42,7 @@ export function DndConsumablesList({
 							key={key}
 							className="flex items-center justify-between py-1.5 px-1 border-b border-amber-900/15 hover:bg-amber-900/10 rounded transition-colors group"
 						>
-							<span className="flex-1 pr-2 min-w-0 font-bold text-stone-900 text-xs group-hover:text-red-950 truncate">
+							<span className="flex-1 pr-2 min-w-0 font-bold text-stone-900 text-xs group-hover:text-red-950 whitespace-normal break-words">
 								{item.label}
 							</span>
 
