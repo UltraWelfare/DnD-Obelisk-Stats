@@ -288,12 +288,15 @@ export default class DndPlugin extends Plugin {
 			this.markDndElement(el, parsedData.noSeparator ?? false);
 			const root = createRoot(el);
 
-			const onConsumableChange = async (key: string, updated: DndConsumable) => {
+			const onConsumableChange = async (key: string, updated: Partial<DndConsumable>) => {
 				await this.characterStatsStore.update(ctx.sourcePath, (input) => {
-					if (input.consumables) {
-						input.consumables[key] = updated;
+					const consumable = input.consumables?.[key];
+					if (consumable && input.consumables) {
+						input.consumables[key] = {
+							...consumable,
+							...updated
+						};
 					}
-
 					return input;
 				});
 			}
@@ -304,9 +307,9 @@ export default class DndPlugin extends Plugin {
 						<AppContext.Provider value={this.app}>
 							<DndConsumablesList
 								consumables={characterStats.consumables}
-								onConsumableChange={function (key: string, updated: DndConsumable): void {
-									void onConsumableChange(key, updated);
-								}}/>
+								onConsumableChange={(key, updated) =>
+									void onConsumableChange(key, updated)
+								}/>
 						</AppContext.Provider>
 					</StrictMode>,
 				);

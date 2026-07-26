@@ -4,7 +4,7 @@ import {ParchmentHeader, ParchmentSurface} from "./parchment";
 
 export interface DndConsumablesListProps {
 	consumables: Record<string, DndConsumable>;
-	onConsumableChange: (key: string, updated: DndConsumable) => void;
+	onConsumableChange: (key: string, updated: Partial<DndConsumable>) => void;
 	className?: string;
 }
 
@@ -17,7 +17,7 @@ export function DndConsumablesList({
 		const item = consumables[key];
 		if (!item) return;
 		const newUses = Math.min(item.usesMax, Math.max(0, item.uses + delta));
-		onConsumableChange(key, {...item, uses: newUses});
+		onConsumableChange(key, {uses: newUses});
 	};
 
 	return (
