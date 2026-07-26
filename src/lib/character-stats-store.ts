@@ -1,6 +1,7 @@
 import {convertFromInputStats, DndCharacterStats, InputDndCharacterStats} from "./dnd";
-import {App, parseYaml, stringifyYaml} from "obsidian";
+import {App, parseYaml, stringifyYaml } from "obsidian";
 import deepmerge from "deepmerge";
+import {debounce} from "./utils";
 
 type CharacterStatsListener = (stats: DndCharacterStats) => void;
 
@@ -48,27 +49,39 @@ export class CharacterStatsStore {
 			if (emitEventToListeners)
 				this.listenersByPath.get(sourcePath)?.forEach((listener) => listener(newValue.resolved));
 
-			const file = this.app.vault.getFileByPath(sourcePath);
-			if (file === null) {
-				throw new Error(`File not found: ${sourcePath}`);
-			}
-			await this.app.vault.process(file, (content) => {
-				const regex = /```dnd-character-stats\s*\n([\s\S]*?)\n```/;
-				return content.replace(regex, (_, yamlContent: string) => {
-					const existing = parseYaml(yamlContent) as InputDndCharacterStats;
-
-					const overwriteMerge = <T>(
-						destinationArray: T[],
-						sourceArray: T[],
-					): T[] => sourceArray;
-
-					const final = deepmerge(existing, value.input, {
-						arrayMerge: overwriteMerge,
-					});
-					return `\`\`\`dnd-character-stats\n${stringifyYaml(final)}\n\`\`\``;
-				});
-			})
+			this.debouncedSaveToFile(sourcePath, newValue);
 		}
+	}
+
+	private readonly debouncedSaveToFile = debounce(
+		(
+			sourcePath: string,
+			value: { input: InputDndCharacterStats; resolved: DndCharacterStats },
+		) => this.saveToFile(sourcePath, value),
+		1000,
+	);
+
+	private async saveToFile(sourcePath: string, value: { input: InputDndCharacterStats; resolved: DndCharacterStats }) {
+		const file = this.app.vault.getFileByPath(sourcePath);
+		if (file === null) {
+			throw new Error(`File not found: ${sourcePath}`);
+		}
+		await this.app.vault.process(file, (content) => {
+			const regex = /```dnd-character-stats\s*\n([\s\S]*?)\n```/;
+			return content.replace(regex, (_, yamlContent: string) => {
+				const existing = parseYaml(yamlContent) as InputDndCharacterStats;
+
+				const overwriteMerge = <T>(
+					destinationArray: T[],
+					sourceArray: T[],
+				): T[] => sourceArray;
+
+				const final = deepmerge(existing, value.input, {
+					arrayMerge: overwriteMerge,
+				});
+				return `\`\`\`dnd-character-stats\n${stringifyYaml(final)}\n\`\`\``;
+			});
+		})
 	}
 
 	subscribe(sourcePath: string, listener: CharacterStatsListener): () => void {

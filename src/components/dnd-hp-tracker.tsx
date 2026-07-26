@@ -49,30 +49,11 @@ export function HPTracker({
 		setUsedDice(hitDiceUsed);
 	}, [hitDiceUsed]);
 
-	const saveHpTimeoutRef = useRef<number | null>(null);
-	const saveDiceTimeoutRef = useRef<number | null>(null);
-
-	const triggerDebouncedHealthSave = useCallback(
-		(newHp: number, newTempHp: number) => {
-			if (saveHpTimeoutRef.current) window.clearTimeout(saveHpTimeoutRef.current);
-			saveHpTimeoutRef.current = window.setTimeout(() => onHealthChange(newHp, newTempHp), 700);
-		},
-		[onHealthChange]
-	);
-
-	const triggerDebouncedDiceSave = useCallback(
-		(newUsed: number) => {
-			if (saveDiceTimeoutRef.current) window.clearTimeout(saveDiceTimeoutRef.current);
-			saveDiceTimeoutRef.current = window.setTimeout(() => onHitDiceChange(newUsed), 700);
-		},
-		[onHitDiceChange]
-	);
-
 	const updateHp = (newHp: number) => {
 		const clamped = Math.min(maxHp, Math.max(0, newHp));
 		setHp(clamped);
 		setHpEditValue(clamped.toString());
-		triggerDebouncedHealthSave(clamped, tempHp);
+		onHealthChange(clamped, tempHp);
 	};
 
 	const takeDamage = (amount: number) => {
@@ -82,7 +63,7 @@ export function HPTracker({
 		setTempHp(newTempHp);
 		setHp(newHp);
 		setHpEditValue(newHp.toString());
-		triggerDebouncedHealthSave(newHp, newTempHp);
+		onHealthChange(newHp, newTempHp);
 	};
 
 	const replaceTempHp = () => {
@@ -90,13 +71,13 @@ export function HPTracker({
 		if (isNaN(value) || value < 0) return;
 		setTempHp(value);
 		setTempHpEditValue('');
-		triggerDebouncedHealthSave(hp, value);
+		onHealthChange(hp, value);
 	};
 
 	const updateUsedDice = (newUsed: number) => {
 		const clamped = Math.min(hitDiceMax, Math.max(0, newUsed));
 		setUsedDice(clamped);
-		triggerDebouncedDiceSave(clamped);
+		onHitDiceChange(clamped);
 	};
 
 	const handleCustomHpAction = (type: 'heal' | 'damage') => {
