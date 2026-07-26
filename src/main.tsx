@@ -73,6 +73,8 @@ export default class DndPlugin extends Plugin {
 				cards: {
 					label: string
 					value: string;
+					sublabel?: string;
+					offlabel?: string;
 				}[];
 				perRow?: number;
 			}>(source);
@@ -82,7 +84,9 @@ export default class DndPlugin extends Plugin {
 			const render = (characterStats: DndCharacterStats) => {
 				const evaluated = parsedData.cards.map(p => ({
 					label: p.label,
-					value: evaluateTemplate(p.value, characterStats).toString()
+					value: evaluateTemplate(p.value, characterStats).toString(),
+					sublabel: p.sublabel ? evaluateTemplate(p.sublabel, characterStats).toString() : undefined,
+					offlabel: p.offlabel ? evaluateTemplate(p.offlabel, characterStats).toString() : undefined,
 				}));
 
 				root.render(
