@@ -1,8 +1,8 @@
 import {
-	DndCharacterStats,
 	DndConsumable,
 	DndReplenishment,
 	DndRestType,
+	InputDndCharacterStats,
 } from "./dnd";
 
 function replenishConsumable(
@@ -34,16 +34,18 @@ function replenishConsumable(
 }
 
 export function applyRest(
-	characterStats: DndCharacterStats,
+	characterStats: InputDndCharacterStats,
 	restType: DndRestType,
-): DndCharacterStats {
+): InputDndCharacterStats {
 	if (restType === "longRest") {
 		characterStats.health.hp = characterStats.health.hpMax;
 	}
 
-	Object.values(characterStats.consumables).forEach((consumable) => {
-		replenishConsumable(consumable, restType);
-	});
+	if (characterStats.consumables) {
+		Object.values(characterStats.consumables).forEach((consumable) => {
+			replenishConsumable(consumable, restType);
+		});
+	}
 
 	return characterStats;
 }

@@ -1,4 +1,5 @@
 import {typedFromEntries} from "./utils";
+import {evaluate} from "./parser";
 
 export const dndAbilityScoreTypes = [
 	"str", "dex", "con", "int", "wis", "cha"
@@ -35,7 +36,7 @@ export const dndSkillAbilityTypes: Record<DndSkillType, DndAbility> = {
 	"deception": "cha",
 	"history": "int",
 	"insight": "wis",
-	"intimidation":"cha",
+	"intimidation": "cha",
 	"investigation": "int",
 	"medicine": "wis",
 	"nature": "int",
@@ -55,25 +56,11 @@ export type DndCharacterAbilityScores = Record<DndAbility, {
 	savingThrowModifier: number;
 }>;
 
-export const defaultDndAbilityScores: DndCharacterAbilityScores = typedFromEntries(
-	dndAbilityScoreTypes.map((type) => [
-		type,
-		{ score: 10, modifier: getModifier(10), savingThrowModifier: getModifier(10) }
-	])
-);
 
 export type DndCharacterSkills = Record<DndSkillType, {
 	bonus: "normal" | "proficient" | "expertise",
-	calculatedModifier: number,
+	modifier: number,
 }>;
-
-export const defaultDndCharacterSkills: DndCharacterSkills = Object.keys(dndSkillAbilityTypes).reduce((acc, key) => {
-	acc[key as DndSkillType] = {
-		bonus: "normal",
-		calculatedModifier: 0,
-	};
-	return acc;
-}, {} as DndCharacterSkills);
 
 export type DndConsumable = {
 	label: string;
@@ -92,12 +79,12 @@ export type DndReplenishment = {
 
 export type InputDndCharacterStats = {
 	health: {
-		hp: number,
-		hpMax: number,
-		tempHp?: number,
+		hp: number | string,
+		hpMax: number | string,
+		tempHp?: number | string,
 		hitDie: string,
-		hitDiceMax: number,
-		hitDiceUsed: number,
+		hitDiceMax: number | string,
+		hitDiceUsed: number | string,
 	},
 	level: number,
 	pb: number,
@@ -135,38 +122,15 @@ export type DndCharacterStats = {
 	[key: string]: unknown;
 };
 
-export function convertToInputStats(stats: DndCharacterStats): InputDndCharacterStats {
-	return {
-		...stats,
-		level: stats.level,
-		pb: stats.pb,
-		health: {hitDiceMax: stats.health.hitDiceMax, hitDiceUsed: stats.health.hitDiceUsed, hitDie: stats.health.hitDie, hp: stats.health.hp, hpMax: stats.health.hpMax, tempHp: stats.health.tempHp},
-		abilities: typedFromEntries(
-			Object.keys(stats.abilities).map(ability => [ability as keyof typeof stats.abilities, stats.abilities[ability as keyof typeof stats.abilities]?.score ?? 0]),
-		),
-		savingThrows: structuredClone(stats.savingThrows),
-		skills: typedFromEntries(
-			Object.keys(stats.skills)
-				.filter(skillName => {
-					const skill = stats.skills[skillName as keyof typeof stats.skills];
-					return skill.bonus !== "normal";
-				})
-				.map(skill => [skill, stats.skills[skill as keyof typeof stats.skills].bonus ?? "normal"])
-		),
-		consumables: structuredClone(stats.consumables)
-	}
-}
-export function convertFromInputStats(input: InputDndCharacterStats){
-
-
-	return {
+export function convertFromInputStats(input: InputDndCharacterStats) {
+	const temporary: Record<string, unknown> = {
 		...input,
 		level: input.level,
 		pb: input.pb,
 		health: {
 			hp: input.health.hp,
 			hpMax: input.health.hpMax,
-			tempHp: Math.max(0, input.health.tempHp ?? 0),
+			tempHp: input.health.tempHp ?? 0,
 			hitDie: input.health.hitDie,
 			hitDiceMax: input.health.hitDiceMax,
 			hitDiceUsed: input.health.hitDiceUsed
@@ -180,7 +144,7 @@ export function convertFromInputStats(input: InputDndCharacterStats){
 				modifier,
 				savingThrowModifier: isProficient ? modifier + input.pb : modifier
 			}];
-		})),
+		})) satisfies DndCharacterAbilityScores,
 		savingThrows: structuredClone(input.savingThrows ?? []),
 		skills: typedFromEntries(dndSkillTypes.map(type => {
 			const inputSkill = input.skills[type];
@@ -190,16 +154,18 @@ export function convertFromInputStats(input: InputDndCharacterStats){
 
 			return [type, {
 				bonus: inputSkill ?? "normal",
-				calculatedModifier: abilityModifier + (inputSkill ?
+				modifier: abilityModifier + (inputSkill ?
 						inputSkill === 'proficient' ? input.pb
 							: inputSkill === 'expertise' ? input.pb * 2
 								: 0
 						: 0
 				)
 			}];
-		})),
+		})) satisfies DndCharacterSkills,
 		consumables: structuredClone(input.consumables ?? {})
-	} satisfies DndCharacterStats;
+	};
+
+	return evaluate(temporary) as DndCharacterStats;
 }
 
 export function getModifier(score: number): number {

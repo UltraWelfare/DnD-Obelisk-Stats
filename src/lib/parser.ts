@@ -1,6 +1,5 @@
 import {Parser, Value} from "expr-eval";
-import {convertToInputStats, DndCharacterStats, formatModifier, getModifier} from "./dnd";
-import {typedFromEntries} from "./utils";
+import {formatModifier, getModifier} from "./dnd";
 
 type ExprFunction = (...args: number[]) => number | string;
 
@@ -17,34 +16,79 @@ parser.functions.mod = (a: number) => getModifier(a);
 parser.functions.format = (a: number) => formatModifier(a);
 parser.functions.floor = Math.floor;
 
-export function evaluateTemplate(template: string, scope: object) {
-	return template.replace(/\{\{(.*?)}}/g, (_, mathExpression: string) => {
-		try {
-			const expr = parser.parse(mathExpression);
-			// we cast to Value because the parser expects it. The parser does not allow for nested objects but because of `allowMemberAccess` we can use them. However the type is still restricted to flat objects.
-			const result = expr.evaluate(scope as Value) as unknown;
-			if (typeof result === 'number')
-				return Number(result).toString();
-			if (typeof result === 'string')
-				return result;
-			return "unknown math expression result";
-		} catch (e) {
-			if (e instanceof Error)
-				return e.toString();
-			return "unknown error";
-		}
-	});
+export function evaluateTemplate(
+	template: string,
+	scope: object,
+): number | string {
+	const fullMatch = template.match(/^\{\{(.*?)}}$/);
+
+	if (fullMatch?.[1]) {
+		return evaluateExpression(fullMatch[1], scope);
+	}
+
+	return template.replace(/\{\{(.*?)}}/g, (_, expr: string) =>
+		String(evaluateExpression(expr, scope)),
+	);
 }
 
-export function convertDndCharStatsToParserScope(stats: DndCharacterStats) {
-	// Get the scheme as close to the input as possible
-	const input = convertToInputStats(stats);
+function evaluateExpression(
+	expression: string,
+	scope: object,
+): number | string {
+	try {
+		const expr = parser.parse(expression);
 
-	return {
-		...input,
-		// Change skills.
-		skills: typedFromEntries(
-			Object.keys(stats.skills).map(key => [key, stats.skills[key as keyof typeof stats.skills].calculatedModifier ])
-		)
+		// we cast to Value because the parser expects it. The parser does not allow for nested objects, but because of `allowMemberAccess` we can use them. However, the type is still restricted to flat objects.
+		const result = expr.evaluate(scope as Value) as unknown;
+
+		if (typeof result === "number" || typeof result === "string") {
+			return result;
+		}
+
+		return "unknown math expression result";
+	} catch (e) {
+		if (e instanceof Error) {
+			return e.toString();
+		}
+
+		return "unknown error";
+	}
+}
+
+export function evaluate(obj: Record<string, unknown>) {
+	const context: Record<string, unknown> = {};
+
+	visit(obj, context, context);
+
+	return obj;
+}
+
+function visit(
+	current: Record<string, unknown>,
+	currentContext: Record<string, unknown>,
+	rootContext: Record<string, unknown>,
+) {
+	for (const [key, value] of Object.entries(current)) {
+		if (
+			value !== null &&
+			typeof value === "object" &&
+			!Array.isArray(value)
+		) {
+			const childContext: Record<string, unknown> = {};
+			currentContext[key] = childContext;
+
+			visit(
+				value as Record<string, unknown>,
+				childContext,
+				rootContext,
+			);
+		} else if (typeof value === "string") {
+			const evaluated = evaluateTemplate(value, rootContext);
+
+			current[key] = evaluated;
+			currentContext[key] = evaluated;
+		} else {
+			currentContext[key] = value;
+		}
 	}
 }

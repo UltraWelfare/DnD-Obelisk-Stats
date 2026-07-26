@@ -65,7 +65,7 @@ export function DndSkillsTable({ skills, className = '' }: DndSkillsTableProps) 
 
 						<div className="w-8 flex justify-end shrink-0">
 							<span className="inline-block px-1.5 py-0.5 rounded bg-stone-900/5 border border-amber-900/20 text-stone-950 text-xs font-serif font-black min-w-[28px] text-center">
-								{skillData ? formatModifier(skillData.calculatedModifier) : '+0'}
+								{skillData ? formatModifier(skillData.modifier) : '+0'}
 							</span>
 						</div>
 					</div>

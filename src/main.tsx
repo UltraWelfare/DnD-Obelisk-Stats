@@ -10,14 +10,16 @@ import {AppContext} from "./lib/app-context";
 import {
 	DndCharacterStats,
 	InputDndCharacterStats,
-	convertFromInputStats, DndAbility, DndConsumable, DndRestType
+	DndAbility, DndConsumable, DndRestType
 } from "./lib/dnd";
 import DndCalculatedCards from "./components/dnd-calculated-cards";
 import {DndSkillsTable} from "./components/dnd-skills-table";
 import {CharacterStatsStore} from "./lib/character-stats-store";
 import {HPTracker} from "./components/dnd-hp-tracker";
 import {DndBadges} from "./components/dnd-badges";
-import {convertDndCharStatsToParserScope, evaluateTemplate} from "./lib/parser";
+import {
+	evaluateTemplate,
+} from "./lib/parser";
 import {DndConsumablesList} from "./components/dnd-consumables";
 import {applyRest} from "./lib/dnd-rest";
 
@@ -80,7 +82,7 @@ export default class DndPlugin extends Plugin {
 			const render = (characterStats: DndCharacterStats) => {
 				const evaluated = parsedData.cards.map(p => ({
 					label: p.label,
-					value: evaluateTemplate(p.value, convertDndCharStatsToParserScope(characterStats))
+					value: evaluateTemplate(p.value, characterStats).toString()
 				}));
 
 				root.render(
@@ -125,11 +127,9 @@ export default class DndPlugin extends Plugin {
 
 	private registerDndCharacterStatsProcessor() {
 		this.registerMarkdownCodeBlockProcessor('dnd-character-stats', (source, el, ctx) => {
-			const parsedData = this.parseData<InputDndCharacterStats>(source);
-			this.markDndElement(el, parsedData.noSeparator ?? false);
-
-			const characterStats = convertFromInputStats(parsedData);
-			this.characterStatsStore.set(ctx.sourcePath, characterStats);
+			const input = this.parseData<InputDndCharacterStats>(source);
+			this.characterStatsStore.set(ctx.sourcePath, input);
+			this.markDndElement(el, input.noSeparator ?? false);
 
 			const container = el.createDiv({cls: "dnd-stats-badge"});
 
@@ -245,7 +245,7 @@ export default class DndPlugin extends Plugin {
 			const render = (characterStats: DndCharacterStats) => {
 				const evaluated = parsedData.badges.map(p => ({
 					label: p.label,
-					value: evaluateTemplate(p.value, convertDndCharStatsToParserScope(characterStats))
+					value: evaluateTemplate(p.value, characterStats)
 				}));
 
 				root.render(
@@ -273,9 +273,12 @@ export default class DndPlugin extends Plugin {
 			const root = createRoot(el);
 
 			const onConsumableChange = async (key: string, updated: DndConsumable) => {
-				await this.characterStatsStore.update(ctx.sourcePath, (characterStats) => {
-					characterStats.consumables[key] = updated;
-					return characterStats;
+				await this.characterStatsStore.update(ctx.sourcePath, (input) => {
+					if (input.consumables) {
+						input.consumables[key] = updated;
+					}
+
+					return input;
 				});
 			}
 

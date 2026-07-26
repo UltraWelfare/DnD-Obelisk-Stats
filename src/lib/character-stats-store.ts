@@ -1,4 +1,4 @@
-import {convertToInputStats, DndCharacterStats, InputDndCharacterStats} from "./dnd";
+import {convertFromInputStats, DndCharacterStats, InputDndCharacterStats} from "./dnd";
 import {App, parseYaml, stringifyYaml} from "obsidian";
 import deepmerge from "deepmerge";
 
@@ -6,7 +6,13 @@ type CharacterStatsListener = (stats: DndCharacterStats) => void;
 
 export class CharacterStatsStore {
 
-	private readonly statsByPath = new Map<string, DndCharacterStats>();
+	private readonly statsByPath = new Map<string,
+		{
+			input: InputDndCharacterStats,
+			resolved: DndCharacterStats
+		}
+	>();
+
 	private readonly listenersByPath = new Map<string, Set<CharacterStatsListener>>();
 
 	constructor(
@@ -15,22 +21,32 @@ export class CharacterStatsStore {
 	}
 
 	get(sourcePath: string): DndCharacterStats | undefined {
-		return this.statsByPath.get(sourcePath);
+		return this.statsByPath.get(sourcePath)?.resolved;
 	}
 
-	set(sourcePath: string, stats: DndCharacterStats): void {
-		this.statsByPath.set(sourcePath, stats);
-		this.listenersByPath.get(sourcePath)?.forEach((listener) => listener(stats));
+	set(sourcePath: string,
+		input: InputDndCharacterStats,
+	): void {
+		const newValue = {
+			input,
+			resolved: convertFromInputStats(input)
+		};
+		this.statsByPath.set(sourcePath, newValue);
+		this.listenersByPath.get(sourcePath)?.forEach((listener) => listener(newValue.resolved));
 	}
 
-	async update(sourcePath: string, updater: (stats: DndCharacterStats) => DndCharacterStats, emitEventToListeners: boolean = true) {
-		const stats = this.statsByPath.get(sourcePath);
-		if (stats) {
-			const newStats = updater(stats);
-			this.statsByPath.set(sourcePath, newStats);
+	async update(sourcePath: string, updater: (stats: InputDndCharacterStats) => InputDndCharacterStats, emitEventToListeners: boolean = true) {
+		const value = this.statsByPath.get(sourcePath);
+		if (value) {
+			const newInput = updater(value.input);
+			const newValue = {
+				input: newInput,
+				resolved: convertFromInputStats(newInput)
+			};
+			this.statsByPath.set(sourcePath, newValue);
 
 			if (emitEventToListeners)
-				this.listenersByPath.get(sourcePath)?.forEach((listener) => listener(newStats));
+				this.listenersByPath.get(sourcePath)?.forEach((listener) => listener(newValue.resolved));
 
 			const file = this.app.vault.getFileByPath(sourcePath);
 			if (file === null) {
@@ -40,17 +56,15 @@ export class CharacterStatsStore {
 				const regex = /```dnd-character-stats\s*\n([\s\S]*?)\n```/;
 				return content.replace(regex, (_, yamlContent: string) => {
 					const existing = parseYaml(yamlContent) as InputDndCharacterStats;
-					const updated = convertToInputStats(newStats);
 
 					const overwriteMerge = <T>(
 						destinationArray: T[],
 						sourceArray: T[],
 					): T[] => sourceArray;
 
-					const final = deepmerge(existing, updated, {
-						arrayMerge: overwriteMerge
+					const final = deepmerge(existing, value.input, {
+						arrayMerge: overwriteMerge,
 					});
-
 					return `\`\`\`dnd-character-stats\n${stringifyYaml(final)}\n\`\`\``;
 				});
 			})
