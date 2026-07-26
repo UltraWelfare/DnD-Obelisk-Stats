@@ -1,4 +1,4 @@
-import {Parser, Value} from "expr-eval";
+import {Parser, Value} from "expr-eval-fork";
 import {formatModifier, getModifier} from "./dnd";
 
 type ExprFunction = (...args: number[]) => number | string;
