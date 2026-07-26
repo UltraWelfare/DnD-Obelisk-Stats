@@ -44,13 +44,15 @@ export function applyRest(
 		input.health.hp = input.health.hpMax;
 	}
 
-	if (input.consumables) {
-		Object.values(input.consumables).forEach((consumable) => {
-			const resolvedConsumable = resolved.consumables[consumable.label];
-			if (!resolvedConsumable) return;
-			replenishConsumable(consumable, resolvedConsumable, restType);
-		});
-	}
+	const inputConsumables = input.consumables;
+	if (!inputConsumables) return input;
+
+	Object.keys(inputConsumables).forEach((consumableKey) => {
+		const inputConsumable = inputConsumables[consumableKey];
+		const resolvedConsumable = resolved.consumables[consumableKey];
+		if (!resolvedConsumable || !inputConsumable) return;
+		replenishConsumable(inputConsumable, resolvedConsumable, restType);
+	});
 
 	return input;
 }
