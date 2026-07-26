@@ -1,3 +1,4 @@
+import {Platform} from "obsidian";
 import {Card} from "./card";
 
 type CalculatedCard = {
@@ -9,10 +10,12 @@ type CalculatedCard = {
 
 interface DndCalculatedCardsProps {
 	cards: CalculatedCard[];
-	cardsPerRow: number;
+	cardsPerRowDesktop: number;
+	cardsPerRowMobile: number;
 }
 
-export default function DndCalculatedCards({cards, cardsPerRow}: DndCalculatedCardsProps) {
+export default function DndCalculatedCards({cards, cardsPerRowDesktop, cardsPerRowMobile}: DndCalculatedCardsProps) {
+	const cardsPerRow = Platform.isMobile ? cardsPerRowMobile : cardsPerRowDesktop;
 	return (
 		<div className="my-3 grid gap-4" style={{gridTemplateColumns: `repeat(${cardsPerRow}, minmax(0, 1fr))`}}>
 			{cards.map((c) => (

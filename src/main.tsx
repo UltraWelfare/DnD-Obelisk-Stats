@@ -77,6 +77,8 @@ export default class DndPlugin extends Plugin {
 					offlabel?: string;
 				}[];
 				perRow?: number;
+				perRowDesktop?: number;
+				perRowMobile?: number;
 			}>(source);
 			this.markDndElement(el, parsedData.noSeparator ?? false);
 
@@ -93,7 +95,8 @@ export default class DndPlugin extends Plugin {
 					<StrictMode>
 						<AppContext.Provider value={this.app}>
 							<DndCalculatedCards
-								cardsPerRow={parsedData.perRow ?? 4}
+								cardsPerRowDesktop={parsedData.perRowDesktop ?? parsedData.perRow ?? 4}
+								cardsPerRowMobile={parsedData.perRowMobile ?? parsedData.perRow ?? 2}
 								cards={evaluated}/>
 						</AppContext.Provider>
 					</StrictMode>,
