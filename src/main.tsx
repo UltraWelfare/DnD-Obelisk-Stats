@@ -216,8 +216,8 @@ export default class DndPlugin extends Plugin {
 			};
 
 			const onRest = async (restType: DndRestType) => {
-				await this.characterStatsStore.update(ctx.sourcePath, (characterStats) =>
-					applyRest(characterStats, restType)
+				await this.characterStatsStore.update(ctx.sourcePath, (input, resolved) =>
+					applyRest(input, resolved, restType)
 				);
 			};
 

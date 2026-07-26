@@ -36,10 +36,10 @@ export class CharacterStatsStore {
 		this.listenersByPath.get(sourcePath)?.forEach((listener) => listener(newValue.resolved));
 	}
 
-	async update(sourcePath: string, updater: (stats: InputDndCharacterStats) => InputDndCharacterStats, emitEventToListeners: boolean = true) {
+	async update(sourcePath: string, updater: (input: InputDndCharacterStats, resolved: DndCharacterStats) => InputDndCharacterStats, emitEventToListeners: boolean = true) {
 		const value = this.statsByPath.get(sourcePath);
 		if (value) {
-			const newInput = updater(value.input);
+			const newInput = updater(value.input, value.resolved);
 			const newValue = {
 				input: newInput,
 				resolved: convertFromInputStats(newInput)

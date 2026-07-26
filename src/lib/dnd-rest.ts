@@ -1,4 +1,5 @@
 import {
+	DndCharacterStats,
 	DndConsumable,
 	DndReplenishment,
 	DndRestType,
@@ -6,15 +7,16 @@ import {
 } from "./dnd";
 
 function replenishConsumable(
-	consumable: DndConsumable,
+	inputConsumable: DndConsumable,
+	resolvedConsumable: DndConsumable,
 	restType: DndRestType,
 ): void {
-	const replenishesOn = consumable.replenishesOn;
+	const replenishesOn = resolvedConsumable.replenishesOn;
 	if (!replenishesOn) return;
 
 	if (typeof replenishesOn === "string") {
 		if (replenishesOn === restType) {
-			consumable.uses = consumable.usesMax;
+			inputConsumable.uses = resolvedConsumable.usesMax;
 		}
 		return;
 	}
@@ -25,27 +27,30 @@ function replenishConsumable(
 	const matchingRule = rules.find((rule) => rule.type === restType);
 	if (!matchingRule) return;
 
-	consumable.uses = matchingRule.amount === undefined
-		? consumable.usesMax
+	inputConsumable.uses = matchingRule.amount === undefined
+		? resolvedConsumable.usesMax
 		: Math.min(
-			consumable.usesMax,
-			Math.max(0, consumable.uses + matchingRule.amount),
+			resolvedConsumable.usesMax,
+			Math.max(0, inputConsumable.uses + matchingRule.amount),
 		);
 }
 
 export function applyRest(
-	characterStats: InputDndCharacterStats,
+	input: InputDndCharacterStats,
+	resolved: DndCharacterStats,
 	restType: DndRestType,
 ): InputDndCharacterStats {
 	if (restType === "longRest") {
-		characterStats.health.hp = characterStats.health.hpMax;
+		input.health.hp = input.health.hpMax;
 	}
 
-	if (characterStats.consumables) {
-		Object.values(characterStats.consumables).forEach((consumable) => {
-			replenishConsumable(consumable, restType);
+	if (input.consumables) {
+		Object.values(input.consumables).forEach((consumable) => {
+			const resolvedConsumable = resolved.consumables[consumable.label];
+			if (!resolvedConsumable) return;
+			replenishConsumable(consumable, resolvedConsumable, restType);
 		});
 	}
 
-	return characterStats;
+	return input;
 }
