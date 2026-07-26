@@ -21,10 +21,28 @@ function replenishConsumable(
 		return;
 	}
 
-	const rules: DndReplenishment[] = Array.isArray(replenishesOn)
-		? replenishesOn
-		: [replenishesOn];
-	const matchingRule = rules.find((rule) => rule.type === restType);
+	if (Array.isArray(replenishesOn)) {
+		if (replenishesOn.length > 0 && typeof replenishesOn[0] === "string") {
+			if ((replenishesOn as DndRestType[]).includes(restType)) {
+				inputConsumable.uses = resolvedConsumable.usesMax;
+			}
+			return;
+		}
+
+		const rules = replenishesOn as DndReplenishment[];
+		const matchingRule = rules.find((rule) => rule.type === restType);
+		if (!matchingRule) return;
+
+		inputConsumable.uses = matchingRule.amount === undefined
+			? resolvedConsumable.usesMax
+			: Math.min(
+				resolvedConsumable.usesMax,
+				Math.max(0, inputConsumable.uses + matchingRule.amount),
+			);
+		return;
+	}
+
+	const matchingRule = replenishesOn.type === restType ? replenishesOn : undefined;
 	if (!matchingRule) return;
 
 	inputConsumable.uses = matchingRule.amount === undefined

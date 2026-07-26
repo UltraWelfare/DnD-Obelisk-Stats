@@ -66,14 +66,14 @@ export type InputDndConsumable = {
 	label: string;
 	usesMax: string | number;
 	uses: number;
-	replenishesOn?: DndRestType | DndReplenishment | DndReplenishment[]
+	replenishesOn?: DndRestType | DndRestType[] | DndReplenishment | DndReplenishment[]
 }
 
 export type DndConsumable = {
 	label: string;
 	usesMax: number;
 	uses: number;
-	replenishesOn?: DndRestType | DndReplenishment | DndReplenishment[]
+	replenishesOn?: DndRestType | DndRestType[] | DndReplenishment | DndReplenishment[]
 }
 
 export type DndRestType = "longRest" | "shortRest";
