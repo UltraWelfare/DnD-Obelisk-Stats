@@ -140,15 +140,27 @@ export default class DndPlugin extends Plugin {
 			});
 
 			container.addEventListener("click", () => {
-				const section = ctx.getSectionInfo(el);
-				if (!section) return;
+				void (async () => {
+					const section = ctx.getSectionInfo(el);
+					if (!section) return;
 
-				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (view) {
-					// Set cursor to line right after ```dnd-stats
-					view.editor.setCursor({line: section.lineStart + 1, ch: 0});
-					view.editor.focus();
-				}
+
+					const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+
+
+					if (view) {
+						await view.leaf.setViewState({
+							...view.leaf.getViewState(),
+							state: {
+								...view.leaf.getViewState().state,
+								mode: "source",
+							},
+						});
+						// Set cursor to line right after ```dnd-stats
+						view.editor.setCursor({line: section.lineStart + 1, ch: 0});
+						view.editor.focus();
+					}
+				})();
 			});
 		});
 	}
