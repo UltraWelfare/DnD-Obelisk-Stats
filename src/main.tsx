@@ -2,7 +2,8 @@ import {
 	MarkdownRenderChild,
 	Plugin,
 	parseYaml,
-	MarkdownView
+	MarkdownView,
+	TFile,
 } from 'obsidian';
 import {StrictMode} from "react";
 import {createRoot, Root} from "react-dom/client";
@@ -68,6 +69,14 @@ export default class DndPlugin extends Plugin {
 		this.registerDndConsumables();
 		this.registerDndButtonsProcessor();
 		this.registerDndSeparatorProcessor();
+
+		this.registerEvent(
+			this.app.vault.on('rename', (file, oldPath) => {
+				if (file instanceof TFile) {
+					this.characterStatsStore.rename(oldPath, file.path);
+				}
+			}),
+		);
 	}
 
 

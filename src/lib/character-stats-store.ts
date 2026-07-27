@@ -97,6 +97,25 @@ export class CharacterStatsStore {
 		};
 	}
 
+	rename(oldPath: string, newPath: string): void {
+		const stats = this.statsByPath.get(oldPath);
+		if (stats !== undefined) {
+			this.statsByPath.delete(oldPath);
+			this.statsByPath.set(newPath, stats);
+		}
+
+		const listeners = this.listenersByPath.get(oldPath);
+		if (listeners !== undefined) {
+			this.listenersByPath.delete(oldPath);
+			this.listenersByPath.set(newPath, listeners);
+		}
+
+		if (stats !== undefined) {
+			this.debouncedSaveToFile.cancel();
+			this.debouncedSaveToFile(newPath, stats);
+		}
+	}
+
 	clear(): void {
 		this.statsByPath.clear();
 		this.listenersByPath.clear();
