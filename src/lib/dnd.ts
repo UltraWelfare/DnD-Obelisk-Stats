@@ -1,5 +1,5 @@
 import {typedFromEntries} from "./utils";
-import {evaluate} from "./parser";
+import {evaluateObject} from "./object-parser";
 
 export const dndAbilityScoreTypes = [
 	"str", "dex", "con", "int", "wis", "cha"
@@ -169,7 +169,7 @@ export function convertFromInputStats(input: InputDndCharacterStats) {
 		consumables: structuredClone(input.consumables ?? {})
 	};
 
-	return evaluate(temporary) as DndCharacterStats;
+	return evaluateObject(temporary) as DndCharacterStats;
 }
 
 export function getModifier(score: number): number {

@@ -18,8 +18,8 @@ import {CharacterStatsStore} from "./lib/character-stats-store";
 import {HPTracker} from "./components/dnd-hp-tracker";
 import {DndBadges} from "./components/dnd-badges";
 import {
-	evaluateTemplate,
-} from "./lib/parser";
+	evaluateTemplatedString,
+} from "./lib/expression-parser";
 import {DndConsumablesList} from "./components/dnd-consumables";
 import {applyRest} from "./lib/dnd-rest";
 
@@ -86,9 +86,9 @@ export default class DndPlugin extends Plugin {
 			const render = (characterStats: DndCharacterStats) => {
 				const evaluated = parsedData.cards.map(p => ({
 					label: p.label,
-					value: evaluateTemplate(p.value, characterStats).toString(),
-					sublabel: p.sublabel ? evaluateTemplate(p.sublabel, characterStats).toString() : undefined,
-					offlabel: p.offlabel ? evaluateTemplate(p.offlabel, characterStats).toString() : undefined,
+					value: evaluateTemplatedString(p.value, characterStats).toString(),
+					sublabel: p.sublabel ? evaluateTemplatedString(p.sublabel, characterStats).toString() : undefined,
+					offlabel: p.offlabel ? evaluateTemplatedString(p.offlabel, characterStats).toString() : undefined,
 				}));
 
 				root.render(
@@ -264,7 +264,7 @@ export default class DndPlugin extends Plugin {
 			const render = (characterStats: DndCharacterStats) => {
 				const evaluated = parsedData.badges.map(p => ({
 					label: p.label,
-					value: evaluateTemplate(p.value, characterStats)
+					value: evaluateTemplatedString(p.value, characterStats)
 				}));
 
 				root.render(
