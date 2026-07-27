@@ -1,7 +1,8 @@
 import {
 	MarkdownRenderChild,
 	Plugin,
-	parseYaml, MarkdownView
+	parseYaml,
+	MarkdownView
 } from 'obsidian';
 import {StrictMode} from "react";
 import {createRoot, Root} from "react-dom/client";
@@ -18,10 +19,12 @@ import {CharacterStatsStore} from "./lib/character-stats-store";
 import {HPTracker} from "./components/dnd-hp-tracker";
 import {DndBadges} from "./components/dnd-badges";
 import {
+	BLOCKED_PROPERTIES,
 	evaluateTemplatedString,
 } from "./lib/expression-parser";
 import {DndConsumablesList} from "./components/dnd-consumables";
 import {applyRest} from "./lib/dnd-rest";
+import {DndButtons, DndButtonDefinition} from "./components/dnd-buttons";
 
 class ReactMarkdownRenderChild extends MarkdownRenderChild {
 	constructor(
@@ -63,6 +66,7 @@ export default class DndPlugin extends Plugin {
 		this.registerDndHpTrackerProcessor();
 		this.registerDndBadgesProcessor();
 		this.registerDndConsumables();
+		this.registerDndButtonsProcessor();
 		this.registerDndSeparatorProcessor();
 	}
 
@@ -317,7 +321,7 @@ export default class DndPlugin extends Plugin {
 					<StrictMode>
 						<AppContext.Provider value={this.app}>
 							<DndConsumablesList
-								consumables={characterStats.consumables}
+								consumables={consumables}
 								onConsumableChange={(key, updated) =>
 									void onConsumableChange(key, updated)
 								}/>
@@ -332,6 +336,83 @@ export default class DndPlugin extends Plugin {
 			ctx.addChild(new ReactMarkdownRenderChild(el, root, unsubscribe));
 		})
 	}
+
+	private registerDndButtonsProcessor() {
+		this.registerMarkdownCodeBlockProcessor("dnd-buttons", (source, el, ctx) => {
+			const parsedData = this.parseData<{
+				buttons?: DndButtonDefinition[];
+			}>(source);
+			const buttons = parsedData.buttons ?? [];
+			this.markDndElement(el, parsedData.noSeparator ?? false);
+
+			const root = createRoot(el);
+			const setDndVariable = (target: InputDndCharacterStats, path: string, value: unknown) => {
+				const parts = path.split(".");
+				if (parts.some(part => part.length === 0 || BLOCKED_PROPERTIES.has(part))) {
+					throw new Error(`Invalid variable path: ${path}`);
+				}
+
+				let current = target as Record<string, unknown>;
+				for (const part of parts.slice(0, -1)) {
+					const existing = current[part];
+					if (existing === undefined) {
+						const child: Record<string, unknown> = {};
+						current[part] = child;
+						current = child;
+					} else if (existing !== null && typeof existing === "object" && !Array.isArray(existing)) {
+						current = existing as Record<string, unknown>;
+					} else {
+						throw new Error(`Cannot update "${path}": "${part}" is not an object.`);
+					}
+				}
+
+				const finalPart = parts[parts.length - 1];
+				if (finalPart === undefined) {
+					throw new Error(`Invalid variable path: ${path}`);
+				}
+				current[finalPart] = value;
+			}
+			const render = (characterStats: DndCharacterStats) => {
+				const evaluatedButtons = buttons.map(button => ({
+					...button,
+					label: String(evaluateTemplatedString(button.label, characterStats)),
+				}));
+
+				root.render(
+					<StrictMode>
+						<DndButtons
+							buttons={evaluatedButtons}
+							onClick={async button => {
+								await this.characterStatsStore.update(
+									ctx.sourcePath,
+									(input, resolved) => {
+										for (const [path, value] of Object.entries(button.update)) {
+											setDndVariable(
+												input,
+												path,
+												typeof value === "string"
+													? evaluateTemplatedString(value, resolved)
+													: structuredClone(value),
+											);
+										}
+										return input;
+									},
+								);
+
+							}}
+						/>
+					</StrictMode>,
+				);
+			};
+
+			const unsubscribe = this.characterStatsStore.subscribe(ctx.sourcePath, render);
+			const characterStats = this.characterStatsStore.get(ctx.sourcePath);
+			if (characterStats) render(characterStats);
+
+			ctx.addChild(new ReactMarkdownRenderChild(el, root, unsubscribe));
+		});
+	}
+
 
 	private registerDndSeparatorProcessor() {
 		this.registerMarkdownCodeBlockProcessor('dnd-separator', (_source, el) => {

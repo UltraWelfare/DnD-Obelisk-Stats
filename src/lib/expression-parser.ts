@@ -51,7 +51,7 @@ function evaluateExpression(
 }
 
 const OPTIONAL_CHAIN_SHORT_CIRCUIT = Symbol("optional-chain-short-circuit");
-const BLOCKED_PROPERTIES = new Set<PropertyKey>([
+export const BLOCKED_PROPERTIES = new Set<PropertyKey>([
 	"__proto__",
 	"constructor",
 	"prototype",
