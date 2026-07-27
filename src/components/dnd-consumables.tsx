@@ -27,7 +27,7 @@ export function DndConsumablesList({
 			<div className="p-3 relative flex flex-col gap-1 w-full">
 				<div className="flex items-center justify-between pb-1.5 mb-1 border-b-2 border-red-900/40 text-[10px] uppercase font-sans font-black text-red-950 tracking-wider px-1">
 					<span className="flex-1">Item / Feature</span>
-					<span className="w-16 text-center">Available</span>
+					<span className="w-16 text-center">Used</span>
 					<span className="w-16 text-center">Max</span>
 					<span className="w-20 text-right">Actions</span>
 				</div>

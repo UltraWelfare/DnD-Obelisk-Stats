@@ -16,7 +16,7 @@ function replenishConsumable(
 
 	if (typeof replenishesOn === "string") {
 		if (replenishesOn === restType) {
-			inputConsumable.uses = resolvedConsumable.usesMax;
+			inputConsumable.uses = 0;
 		}
 		return;
 	}
@@ -24,7 +24,7 @@ function replenishConsumable(
 	if (Array.isArray(replenishesOn)) {
 		if (replenishesOn.length > 0 && typeof replenishesOn[0] === "string") {
 			if ((replenishesOn as DndRestType[]).includes(restType)) {
-				inputConsumable.uses = resolvedConsumable.usesMax;
+				inputConsumable.uses = 0;
 			}
 			return;
 		}
@@ -34,10 +34,10 @@ function replenishConsumable(
 		if (!matchingRule) return;
 
 		inputConsumable.uses = matchingRule.amount === undefined
-			? resolvedConsumable.usesMax
-			: Math.min(
-				resolvedConsumable.usesMax,
-				Math.max(0, inputConsumable.uses + matchingRule.amount),
+			? 0
+			: Math.max(
+				0,
+				 inputConsumable.uses - matchingRule.amount,
 			);
 		return;
 	}
@@ -46,10 +46,10 @@ function replenishConsumable(
 	if (!matchingRule) return;
 
 	inputConsumable.uses = matchingRule.amount === undefined
-		? resolvedConsumable.usesMax
-		: Math.min(
-			resolvedConsumable.usesMax,
-			Math.max(0, inputConsumable.uses + matchingRule.amount),
+		? 0
+		: Math.max(
+			0,
+			inputConsumable.uses - matchingRule.amount,
 		);
 }
 

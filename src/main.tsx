@@ -287,9 +287,11 @@ export default class DndPlugin extends Plugin {
 
 	private registerDndConsumables() {
 		this.registerMarkdownCodeBlockProcessor('dnd-consumables', (source, el, ctx) => {
-			const parsedData = this.parseData(source);
+			const parsedData = this.parseData<{ hideZeroMaxUses?: boolean }>(source);
 			this.markDndElement(el, parsedData.noSeparator ?? false);
 			const root = createRoot(el);
+
+			const hideZeroMaxUses = parsedData.hideZeroMaxUses ?? true;
 
 			const onConsumableChange = async (key: string, updated: Partial<DndConsumable>) => {
 				await this.characterStatsStore.update(ctx.sourcePath, (input) => {
@@ -305,6 +307,12 @@ export default class DndPlugin extends Plugin {
 			}
 
 			const render = (characterStats: DndCharacterStats) => {
+				const consumables = hideZeroMaxUses
+					? Object.fromEntries(
+						Object.entries(characterStats.consumables).filter(([, item]) => item.usesMax !== 0)
+					)
+					: characterStats.consumables;
+
 				root.render(
 					<StrictMode>
 						<AppContext.Provider value={this.app}>
