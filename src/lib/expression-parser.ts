@@ -31,14 +31,22 @@ function evaluateExpression(
 	expression: string,
 	scope: Scope,
 ): number | string {
-	const evaluated = parseAndEvaluateExpr(expression, {
-		...scope,
-		math: math,
-	});
-	if (typeof evaluated === "number" || typeof evaluated === "string") {
-		return evaluated;
-	} else {
-		return String(evaluated);
+	try {
+		const evaluated = parseAndEvaluateExpr(expression, {
+			...scope,
+			math: math,
+		});
+
+		if (typeof evaluated === "number" || typeof evaluated === "string") {
+			return evaluated;
+		} else {
+			return String(evaluated);
+		}
+	} catch (e) {
+		if (e instanceof Error) {
+			return e.message;
+		}
+		return "Unknown error";
 	}
 }
 
