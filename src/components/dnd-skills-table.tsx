@@ -42,8 +42,8 @@ export function DndSkillsTable({ skills, className = '' }: DndSkillsTableProps) 
 			{skillKeys.map((skillKey) => {
 				const meta = SKILL_METADATA[skillKey];
 				const skillData = skills[skillKey];
-				const isExpertise = skillData?.bonus === 'expertise';
-				const isProficient = skillData?.bonus === 'proficient';
+				const isExpertise = skillData?.type === 'expertise';
+				const isProficient = skillData?.type === 'proficient';
 
 				return (
 					<div

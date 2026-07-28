@@ -58,7 +58,7 @@ export type DndCharacterAbilityScores = Record<DndAbility, {
 
 
 export type DndCharacterSkills = Record<DndSkillType, {
-	bonus: "normal" | "proficient" | "expertise",
+	type: "normal" | "proficient" | "expertise",
 	modifier: number,
 }>;
 
@@ -103,7 +103,7 @@ export type InputDndCharacterStats = {
 		cha: number,
 	},
 	savingThrows?: DndAbility[],
-	skills: Record<DndSkillType, "normal" | "proficient" | "expertise">,
+	skills: Record<DndSkillType, "normal" | "proficient" | "expertise" | { type: "normal" | "proficient" | "expertise", bonus?: number }>,
 	consumables?: Record<string, InputDndConsumable>
 } & {
 	[key: string]: unknown;
@@ -156,14 +156,21 @@ export function convertFromInputStats(input: InputDndCharacterStats) {
 			const abilityScore = input.abilities[correlatedAbility];
 			const abilityModifier = getModifier(abilityScore);
 
-			return [type, {
-				bonus: inputSkill ?? "normal",
-				modifier: abilityModifier + (inputSkill ?
-						inputSkill === 'proficient' ? input.pb
-							: inputSkill === 'expertise' ? input.pb * 2
-								: 0
+			const skillType = inputSkill
+				? (typeof inputSkill === 'object' ? inputSkill.type : inputSkill)
+				: "normal";
+			const bonus = inputSkill && typeof inputSkill === 'object'
+				? (inputSkill.bonus ?? 0)
+				: 0;
+			const pbContribution = inputSkill
+				? skillType === 'proficient' ? input.pb
+					: skillType === 'expertise' ? input.pb * 2
 						: 0
-				)
+				: 0;
+
+			return [type, {
+				type: skillType,
+				modifier: abilityModifier + pbContribution + bonus
 			}];
 		})) satisfies DndCharacterSkills,
 		consumables: structuredClone(input.consumables ?? {})

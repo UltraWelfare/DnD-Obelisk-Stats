@@ -55,25 +55,28 @@ skills:
   perception: proficient
   survival: proficient
   athletics: proficient
+  acrobatics:
+    type: proficient
+    bonus: 2
 ```
 ````
 
-| Field Path               | Type            | Example                                  | Description                    |
-|:-------------------------|:----------------|:-----------------------------------------|:-------------------------------|
-| **`pb`**                 | Number          | `3`                                      | **Proficiency Bonus**          |
-| **`health.hpMax`**       | Number          | `42`                                     | **Maximum HP**                 |
-| **`health.hp`**          | Number          | `42`                                     | **Current HP**                 |
-| **`health.tempHp`**      | Number          | `0`                                      | **Temporary HP**               |
-| **`health.hitDie`**      | String          | `d6`, `d8`, `d10`, `d12`                 | **Hit Die Type**               |
-| **`health.hitDiceMax`**  | Number          | `5`                                      | **Max Hit Dice**               |
-| **`abilities.str`**      | Number          | `1` to `20` (e.g., `17`)                 | **Strength Score**             |
-| **`abilities.dex`**      | Number          | `1` to `20` (e.g., `14`)                 | **Dexterity Score**            |
-| **`abilities.con`**      | Number          | `1` to `20` (e.g., `17`)                 | **Constitution Score**         |
-| **`abilities.int`**      | Number          | `1` to `20` (e.g., `8`)                  | **Intelligence Score**         |
-| **`abilities.wis`**      | Number          | `1` to `20` (e.g., `10`)                 | **Wisdom Score**               |
-| **`abilities.cha`**      | Number          | `1` to `20` (e.g., `8`)                  | **Charisma Score**             |
-| **`savingThrows`**       | List of Strings | `str`, `dex`, `con`, `int`, `wis`, `cha` | **Saving Throw Proficiencies** |
-| **`skills.<skillName>`** | Key-Value Map   | `proficient`, `expertise`                | **Skill Proficiency**          |
+| Field Path               | Type             | Example                                                     | Description                                                                                                                               |
+|:-------------------------|:-----------------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| **`pb`**                 | Number           | `3`                                                         | **Proficiency Bonus**                                                                                                                     |
+| **`health.hpMax`**       | Number           | `42`                                                        | **Maximum HP**                                                                                                                            |
+| **`health.hp`**          | Number           | `42`                                                        | **Current HP**                                                                                                                            |
+| **`health.tempHp`**      | Number           | `0`                                                         | **Temporary HP**                                                                                                                          |
+| **`health.hitDie`**      | String           | `d6`, `d8`, `d10`, `d12`                                    | **Hit Die Type**                                                                                                                          |
+| **`health.hitDiceMax`**  | Number           | `5`                                                         | **Max Hit Dice**                                                                                                                          |
+| **`abilities.str`**      | Number           | `1` to `20` (e.g., `17`)                                    | **Strength Score**                                                                                                                        |
+| **`abilities.dex`**      | Number           | `1` to `20` (e.g., `14`)                                    | **Dexterity Score**                                                                                                                       |
+| **`abilities.con`**      | Number           | `1` to `20` (e.g., `17`)                                    | **Constitution Score**                                                                                                                    |
+| **`abilities.int`**      | Number           | `1` to `20` (e.g., `8`)                                     | **Intelligence Score**                                                                                                                    |
+| **`abilities.wis`**      | Number           | `1` to `20` (e.g., `10`)                                    | **Wisdom Score**                                                                                                                          |
+| **`abilities.cha`**      | Number           | `1` to `20` (e.g., `8`)                                     | **Charisma Score**                                                                                                                        |
+| **`savingThrows`**       | List of Strings  | `str`, `dex`, `con`, `int`, `wis`, `cha`                    | **Saving Throw Proficiencies**                                                                                                            |
+| **`skills.<skillName>`** | String or Object | `proficient`, `expertise`, `{ type: proficient, bonus: 2 }` | **Skill Proficiency** — string (`normal`, `proficient`, `expertise`) or object with `type` and optional `bonus` (added to final modifier) |
 
 ### Consumables
 
