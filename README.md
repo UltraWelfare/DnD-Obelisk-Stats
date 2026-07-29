@@ -171,7 +171,7 @@ card it will open up a small modal with the note.
 To show the UI for the Skills use the following markdown block:
 
 ````
-```dnd-skills
+```dnd-skills-table
 ```
 ````
 
